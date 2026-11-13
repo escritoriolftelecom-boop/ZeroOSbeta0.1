@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: debian:bookworm
+      options: --privileged
     steps:
       - name: Install build dependencies
         run: |
