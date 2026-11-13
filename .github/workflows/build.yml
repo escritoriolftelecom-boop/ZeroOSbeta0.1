@@ -1,0 +1,41 @@
+name: Build ZeroOS ISO
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install live-build
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y live-build debootstrap xorriso squashfs-tools
+
+      - name: Configure ZeroOS
+        run: |
+          lb config \
+            --distribution bookworm \
+            --archive-areas "main contrib non-free-firmware" \
+            --binary-images iso-hybrid \
+            --debian-installer none \
+            --bootappend-live "boot=live components username=user hostname=zeroos"
+
+      - name: Build ISO
+        run: sudo lb build
+
+      - name: Upload ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZeroOS-ISO
+          path: "*.iso"
+          if-no-files-found: error
+          retention-days: 7
