@@ -47,3 +47,37 @@ jobs:
           path: "*.iso"
           if-no-files-found: error
           retention-days: 7
+
+  release:
+    name: Publicar a ISO como versão
+    needs: build
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Baixar a ISO gerada
+        uses: actions/download-artifact@v4
+        with:
+          name: ZeroOS-ISO
+          path: iso
+
+      - name: Preparar arquivos
+        run: |
+          ISO=$(find iso -maxdepth 1 -name "*.iso" | head -1)
+          find iso -maxdepth 1 -name "*.iso" ! -path "$ISO" -delete
+          mv "$ISO" iso/ZeroOS-0.1.iso
+          cd iso
+          sha256sum ZeroOS-0.1.iso > SHA256SUMS
+
+      - name: Publicar a versão no GitHub
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete v0.1 --cleanup-tag --yes || true
+          gh release create v0.1 iso/ZeroOS-0.1.iso iso/SHA256SUMS \
+            --title "Zero OS 0.1" \
+            --notes "Primeira versão beta do Zero OS. Grave a ISO num pendrive e experimente sem instalar." \
+            --latest
