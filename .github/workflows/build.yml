@@ -18,7 +18,7 @@ jobs:
       - name: Install live-build
         run: |
           sudo apt-get update
-          sudo apt-get install -y live-build debootstrap xorriso squashfs-tools
+          sudo apt-get install -y live-build debootstrap xorriso squashfs-tools debian-archive-keyring
 
       - name: Configure ZeroOS
         run: |
@@ -27,6 +27,9 @@ jobs:
             --archive-areas "main contrib non-free-firmware" \
             --binary-images iso-hybrid \
             --debian-installer none \
+            --mirror-bootstrap http://deb.debian.org/debian \
+            --mirror-chroot http://deb.debian.org/debian \
+            --mirror-binary http://deb.debian.org/debian \
             --bootappend-live "boot=live components username=user hostname=zeroos"
 
       - name: Build ISO
